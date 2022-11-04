@@ -1,0 +1,5 @@
+tasks:
+  foo:
+    cmds: go run main.go --name foo
+  bar:
+    cmds: go run main.go --name bar
