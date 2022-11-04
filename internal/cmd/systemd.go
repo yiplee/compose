@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"os"
+	"os/exec"
 	"path"
 
 	"github.com/spf13/cobra"
@@ -27,7 +28,12 @@ var systemdCmd = &cobra.Command{
 			name = path.Base(dir)
 		}
 
-		return generateSystemdUnitFile(name, dir, cmd.OutOrStdout())
+		bin, err := exec.LookPath(cmd.Root().Name())
+		if err != nil {
+			return err
+		}
+
+		return generateSystemdUnitFile(name, dir, bin, cmd.OutOrStdout())
 	},
 }
 
@@ -37,7 +43,7 @@ func init() {
 	systemdCmd.Flags().StringP("name", "n", "", "name of the service")
 }
 
-func generateSystemdUnitFile(name, dir string, w io.Writer) error {
+func generateSystemdUnitFile(name, dir, bin string, w io.Writer) error {
 	t, err := template.New(name).Parse(systemdUnitTemplate)
 	if err != nil {
 		return err
@@ -46,6 +52,7 @@ func generateSystemdUnitFile(name, dir string, w io.Writer) error {
 	return t.Execute(w, map[string]any{
 		"Name": name,
 		"Dir":  dir,
+		"Bin":  bin,
 	})
 }
 
@@ -55,7 +62,7 @@ Description={{.Name}} compose service
 
 [Service]
 WorkingDirectory={{.Dir}}
-ExecStart=compose
+ExecStart={{.Bin}}
 
 [Install]
 WantedBy=multi-user.target

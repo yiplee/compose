@@ -44,8 +44,16 @@ func run(ctx context.Context, t *Task) error {
 }
 
 func Run(ctx context.Context, t *Task) error {
+	if t.Delay > 0 {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(t.Delay):
+		}
+	}
+
 	for {
-		log.Info().Msgf("starting %s", t.Name)
+		log.Info().Str("cmd", t.Cmd).Strs("args", t.Args).Msgf("starting %s", t.Name)
 
 		err := run(ctx, t)
 
@@ -55,7 +63,7 @@ func Run(ctx context.Context, t *Task) error {
 			return err
 		}
 
-		log.Info().Msgf("exited %s with status code %d", t.Name, exitErr.ExitCode())
+		log.Info().Err(err).Msgf("exited %s with status code %d", t.Name, exitErr.ExitCode())
 
 		select {
 		case <-ctx.Done():

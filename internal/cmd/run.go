@@ -60,9 +60,10 @@ func loadTasks() []*compose.Task {
 
 		if args, err := shlex.Split(cmds); err == nil && len(args) > 0 {
 			tasks = append(tasks, &compose.Task{
-				Name: name,
-				Cmd:  args[0],
-				Args: args[1:],
+				Name:  name,
+				Cmd:   args[0],
+				Args:  args[1:],
+				Delay: t.GetDuration("delay"),
 			})
 		}
 	}
