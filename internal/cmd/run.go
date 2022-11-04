@@ -7,6 +7,7 @@ import (
 	"errors"
 
 	"github.com/google/shlex"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/yiplee/compose"
@@ -52,7 +53,8 @@ func loadTasks() []*compose.Task {
 	}
 
 	var tasks []*compose.Task
-	for _, name := range v.AllKeys() {
+	for name := range v.AllSettings() {
+		log.Debug().Msgf("load task %s", name)
 		t := v.Sub(name)
 		cmds := t.GetString("cmds")
 

@@ -1,0 +1,5 @@
+tasks:
+  foo:
+    cmds: 'sleep 10'
+  bar:
+    cmds: 'sleep 20'

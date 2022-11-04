@@ -1,5 +1,7 @@
 # This is an example .goreleaser.yml file with some sensible defaults.
 # Make sure to check the documentation at https://goreleaser.com
+project_name: compose
+
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -8,8 +10,7 @@ before:
     - go generate ./...
 builds:
   - id: compose
-    binary: compose
-    dir: ./cmd/compose
+    main: ./cmd/compose
     env:
       - CGO_ENABLED=0
     goos:

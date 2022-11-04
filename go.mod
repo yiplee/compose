@@ -2,7 +2,7 @@ module github.com/yiplee/compose
 
 go 1.19
 
-require github.com/spf13/pflag v1.0.5
+require github.com/spf13/pflag v1.0.5 // indirect
 
 require (
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -28,7 +28,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/rs/zerolog v1.28.0
-	github.com/spf13/cobra v1.6.1 // indirect
+	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.13.0
 	golang.org/x/sync v0.1.0
 )

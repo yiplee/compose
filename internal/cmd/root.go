@@ -25,9 +25,13 @@ func Execute() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	err := rootCmd.ExecuteContext(ctx)
-	if err != nil {
-		log.Fatal().Err(err).Msg("aborted")
+	const defaultCmd = "run"
+	if cmd, _, err := rootCmd.Find(os.Args[1:]); err == nil && cmd == rootCmd {
+		rootCmd.SetArgs(append([]string{defaultCmd}, os.Args[1:]...))
+	}
+
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
+		os.Exit(1)
 	}
 }
 
@@ -53,7 +57,7 @@ func initConfig() {
 }
 
 func initLogger() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.InfoLevel)
 	if ok, _ := rootCmd.Flags().GetBool("debug"); ok {
 		log.Logger = log.Level(zerolog.DebugLevel)
 	}
