@@ -8,9 +8,11 @@ type PrefixWriter struct {
 }
 
 func (w *PrefixWriter) Write(p []byte) (n int, err error) {
-	if _, err := w.Out.Write([]byte(w.Prefix)); err != nil {
-		return 0, err
+	n, err = w.Out.Write(append([]byte(w.Prefix), p...))
+
+	if n > len(p) {
+		n = len(p)
 	}
 
-	return w.Out.Write(p)
+	return
 }
