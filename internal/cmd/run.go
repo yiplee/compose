@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"errors"
+	"os/signal"
+	"syscall"
 
 	"github.com/google/shlex"
 	"github.com/rs/zerolog/log"
@@ -33,13 +35,20 @@ func runTasks(cmd *cobra.Command) error {
 		return errors.New("no tasks")
 	}
 
-	var g errgroup.Group
+	ctx, stop := signal.NotifyContext(
+		cmd.Context(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+	defer stop()
+
+	g, ctx := errgroup.WithContext(ctx)
 	for idx := range tasks {
 		t := tasks[idx]
 		t.Out = cmd.OutOrStdout()
 		t.Err = cmd.ErrOrStderr()
 		g.Go(func() error {
-			return compose.Run(cmd.Context(), t)
+			return compose.Run(ctx, t)
 		})
 	}
 
