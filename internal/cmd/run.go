@@ -52,8 +52,11 @@ func loadTasks() []*compose.Task {
 		return nil
 	}
 
-	var tasks []*compose.Task
-	for name := range v.AllSettings() {
+	// Pre-allocate slice with known capacity
+	settings := v.AllSettings()
+	tasks := make([]*compose.Task, 0, len(settings))
+	
+	for name := range settings {
 		log.Debug().Msgf("load task %s", name)
 		t := v.Sub(name)
 		cmds := t.GetString("cmds")
