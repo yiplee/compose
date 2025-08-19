@@ -15,8 +15,8 @@ func run(ctx context.Context, t *Task) error {
 	cmd := exec.Command(t.Cmd, t.Args...)
 
 	prefix := fmt.Sprintf("[%s] ", t.Name)
-	cmd.Stderr = &PrefixWriter{Out: t.Err, Prefix: prefix}
-	cmd.Stdout = &PrefixWriter{Out: t.Out, Prefix: prefix}
+	cmd.Stderr = NewPrefixWriter(t.Err, prefix)
+	cmd.Stdout = NewPrefixWriter(t.Out, prefix)
 
 	if err := cmd.Start(); err != nil {
 		return err
@@ -52,18 +52,23 @@ func Run(ctx context.Context, t *Task) error {
 		}
 	}
 
+	// Pre-allocate strings to avoid repeated allocations
+	startMsg := fmt.Sprintf("starting %s", t.Name)
+	finishedMsg := fmt.Sprintf("finished %s", t.Name)
+	exitedMsg := fmt.Sprintf("exited %s with status code", t.Name)
+
 	for {
-		log.Info().Str("cmd", t.Cmd).Strs("args", t.Args).Msgf("starting %s", t.Name)
+		log.Info().Str("cmd", t.Cmd).Strs("args", t.Args).Msg(startMsg)
 
 		err := run(ctx, t)
 
 		var exitErr *exec.ExitError
 		if !errors.As(err, &exitErr) {
-			log.Info().Err(err).Msgf("finished %s", t.Name)
+			log.Info().Err(err).Msg(finishedMsg)
 			return err
 		}
 
-		log.Info().Err(err).Msgf("exited %s with status code %d", t.Name, exitErr.ExitCode())
+		log.Info().Err(err).Msgf("%s %d", exitedMsg, exitErr.ExitCode())
 
 		select {
 		case <-ctx.Done():
