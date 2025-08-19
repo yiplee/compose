@@ -1,9 +1,22 @@
 # Example compose.yaml file demonstrating global arguments
 # 
+# Global arguments can be defined in the YAML file or passed via command line
+# Command line flags override YAML configuration
+# 
 # Usage examples:
 #   compose run --global-args="--verbose" --global-args="--config=/etc/app.conf"
 #   compose run --global-env="DEBUG=true" --global-env="LOG_LEVEL=info"
 #   compose run --global-working-dir="/opt/app" --global-args="--daemon"
+
+# Global settings that apply to all tasks
+global:
+  args:
+    - "--verbose"
+    - "--log-level=info"
+  env:
+    - "NODE_ENV=production"
+    - "LOG_LEVEL=info"
+  working_dir: "/opt/app"
 
 tasks:
   web-server:

@@ -52,10 +52,24 @@ func loadTasks(cmd *cobra.Command) []*compose.Task {
 		return nil
 	}
 
-	// Get global arguments and environment variables
+	// Get global arguments and environment variables from command line flags
 	globalArgs, _ := cmd.Flags().GetStringSlice("global-args")
 	globalEnv, _ := cmd.Flags().GetStringSlice("global-env")
 	globalWorkingDir, _ := cmd.Flags().GetString("global-working-dir")
+
+	// Get global settings from YAML configuration (only if command line flags are not set)
+	if len(globalArgs) == 0 && viper.IsSet("global.args") {
+		globalArgs = viper.GetStringSlice("global.args")
+		log.Debug().Strs("global_args", globalArgs).Msg("loaded global args from YAML config")
+	}
+	if len(globalEnv) == 0 && viper.IsSet("global.env") {
+		globalEnv = viper.GetStringSlice("global.env")
+		log.Debug().Strs("global_env", globalEnv).Msg("loaded global env from YAML config")
+	}
+	if globalWorkingDir == "" && viper.IsSet("global.working_dir") {
+		globalWorkingDir = viper.GetString("global.working_dir")
+		log.Debug().Str("global_working_dir", globalWorkingDir).Msg("loaded global working dir from YAML config")
+	}
 
 	// Pre-allocate slice with known capacity
 	settings := v.AllSettings()
@@ -82,11 +96,18 @@ func loadTasks(cmd *cobra.Command) []*compose.Task {
 			// Set global environment variables if specified
 			if len(globalEnv) > 0 {
 				task.Env = globalEnv
+				log.Debug().Str("task", name).Strs("env", globalEnv).Msg("applied global env to task")
 			}
 			
 			// Set global working directory if specified
 			if globalWorkingDir != "" {
 				task.WorkingDir = globalWorkingDir
+				log.Debug().Str("task", name).Str("working_dir", globalWorkingDir).Msg("applied global working dir to task")
+			}
+			
+			// Log when global args are applied
+			if len(globalArgs) > 0 {
+				log.Debug().Str("task", name).Strs("global_args", globalArgs).Msg("applied global args to task")
 			}
 			
 			tasks = append(tasks, task)
