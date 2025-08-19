@@ -99,8 +99,12 @@ func loadTasks(cmd *cobra.Command) []*compose.Task {
 				log.Debug().Str("task", name).Strs("env", globalEnv).Msg("applied global env to task")
 			}
 			
-			// Set global working directory if specified
-			if globalWorkingDir != "" {
+			// Set working directory: task-specific overrides global
+			taskWorkingDir := t.GetString("working_dir")
+			if taskWorkingDir != "" {
+				task.WorkingDir = taskWorkingDir
+				log.Debug().Str("task", name).Str("working_dir", taskWorkingDir).Msg("applied task-specific working dir")
+			} else if globalWorkingDir != "" {
 				task.WorkingDir = globalWorkingDir
 				log.Debug().Str("task", name).Str("working_dir", globalWorkingDir).Msg("applied global working dir to task")
 			}

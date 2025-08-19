@@ -8,7 +8,7 @@
 #   compose run --global-env="DEBUG=true" --global-env="LOG_LEVEL=info"
 #   compose run --global-working-dir="/opt/app" --global-args="--daemon"
 
-# Global settings that apply to all tasks
+# Global settings that apply to all tasks (can be overridden per task)
 global:
   args:
     - "--verbose"
@@ -16,21 +16,27 @@ global:
   env:
     - "NODE_ENV=production"
     - "LOG_LEVEL=info"
-  working_dir: "/opt/app"
+  working_dir: "/opt/app"  # Default working directory for all tasks
 
 tasks:
   web-server:
     cmds: "nginx -g 'daemon off;'"
     delay: 0s
+    # Uses global working_dir: "/opt/app"
     
   api-server:
     cmds: "node server.js"
     delay: 1s
+    working_dir: "/opt/app/api"  # Override global working directory
+    # Will run in /opt/app/api instead of /opt/app
     
   database:
     cmds: "postgres -D /var/lib/postgresql/data"
     delay: 2s
+    working_dir: "/var/lib/postgresql"  # Override global working directory
+    # Will run in /var/lib/postgresql instead of /opt/app
     
   cache:
     cmds: "redis-server --appendonly yes"
     delay: 1s
+    # Uses global working_dir: "/opt/app"

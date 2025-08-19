@@ -56,7 +56,7 @@ compose run --global-env="DEBUG=true" --global-env="LOG_LEVEL=info"
 ```
 
 ### `global.working_dir`
-Sets the working directory for all commands.
+Sets the working directory for all commands. This can be overridden by individual tasks.
 
 **YAML Configuration:**
 ```yaml
@@ -69,10 +69,29 @@ global:
 compose run --global-working-dir="/opt/app"
 ```
 
+**Per-Task Override:**
+```yaml
+tasks:
+  api-server:
+    cmds: "node server.js"
+    working_dir: "/opt/app/api"  # Overrides global working directory
+  database:
+    cmds: "postgres -D /var/lib/postgresql/data"
+    working_dir: "/var/lib/postgresql"  # Overrides global working directory
+```
+
+## Working Directory Priority
+
+Working directory is resolved in this order (highest to lowest priority):
+
+1. **Task-specific** `working_dir` setting
+2. **Global** `working_dir` setting (from YAML or command line)
+3. **Current working directory** (default)
+
 ## Complete Example Configuration
 
 ```yaml
-# Global settings that apply to all tasks
+# Global settings that apply to all tasks (can be overridden per task)
 global:
   args:
     - "--verbose"
@@ -80,15 +99,20 @@ global:
   env:
     - "NODE_ENV=production"
     - "LOG_LEVEL=info"
-  working_dir: "/opt/app"
+  working_dir: "/opt/app"  # Default working directory for all tasks
 
 tasks:
   web-server:
     cmds: "nginx -g 'daemon off;'"
+    # Uses global working_dir: "/opt/app"
+    
   api-server:
     cmds: "node server.js --port 3000"
+    working_dir: "/opt/app/api"  # Override global working directory
+    
   database:
     cmds: "postgres -D /var/lib/postgresql/data"
+    working_dir: "/var/lib/postgresql"  # Override global working directory
 ```
 
 ## How It Works
@@ -96,6 +120,7 @@ tasks:
 1. **YAML Configuration**: Global settings are read from the `global` section of your compose file
 2. **Command Line Override**: If you specify command line flags, they override the YAML settings
 3. **Task Execution**: Global arguments are appended to each task's command line, environment variables are merged, and working directory is set
+4. **Working Directory Priority**: Task-specific `working_dir` overrides global `working_dir`, which overrides the current working directory
 
 ## Execution Examples
 
