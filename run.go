@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"syscall"
 	"time"
@@ -13,6 +14,16 @@ import (
 
 func run(ctx context.Context, t *Task) error {
 	cmd := exec.Command(t.Cmd, t.Args...)
+
+	// Set working directory if specified
+	if t.WorkingDir != "" {
+		cmd.Dir = t.WorkingDir
+	}
+
+	// Set environment variables if specified
+	if len(t.Env) > 0 {
+		cmd.Env = append(os.Environ(), t.Env...)
+	}
 
 	prefix := fmt.Sprintf("[%s] ", t.Name)
 	cmd.Stderr = NewPrefixWriter(t.Err, prefix)

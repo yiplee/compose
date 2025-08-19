@@ -1,0 +1,23 @@
+# Example compose.yaml file demonstrating global arguments
+# 
+# Usage examples:
+#   compose run --global-args="--verbose" --global-args="--config=/etc/app.conf"
+#   compose run --global-env="DEBUG=true" --global-env="LOG_LEVEL=info"
+#   compose run --global-working-dir="/opt/app" --global-args="--daemon"
+
+tasks:
+  web-server:
+    cmds: "nginx -g 'daemon off;'"
+    delay: 0s
+    
+  api-server:
+    cmds: "node server.js"
+    delay: 1s
+    
+  database:
+    cmds: "postgres -D /var/lib/postgresql/data"
+    delay: 2s
+    
+  cache:
+    cmds: "redis-server --appendonly yes"
+    delay: 1s

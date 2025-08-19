@@ -14,4 +14,8 @@ type Task struct {
 
 	Out io.Writer
 	Err io.Writer
+	
+	// Global settings
+	Env        []string
+	WorkingDir string
 }

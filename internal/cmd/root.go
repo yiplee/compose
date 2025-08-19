@@ -41,6 +41,11 @@ func init() {
 
 	rootCmd.PersistentFlags().StringP("file", "f", "", "Specify an alternate compose file")
 	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug mode")
+	
+	// Global arguments that will be applied to all subcommands
+	rootCmd.PersistentFlags().StringSlice("global-args", []string{}, "Global arguments to append to all commands (e.g., --global-args='--verbose' --global-args='--config=/path/to/config')")
+	rootCmd.PersistentFlags().StringSlice("global-env", []string{}, "Global environment variables to set for all commands (e.g., --global-env='DEBUG=true' --global-env='LOG_LEVEL=info')")
+	rootCmd.PersistentFlags().String("global-working-dir", "", "Global working directory for all commands")
 }
 
 func initConfig() {

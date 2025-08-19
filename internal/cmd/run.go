@@ -28,7 +28,7 @@ func init() {
 }
 
 func runTasks(cmd *cobra.Command) error {
-	tasks := loadTasks()
+	tasks := loadTasks(cmd)
 	if len(tasks) == 0 {
 		return errors.New("no tasks")
 	}
@@ -46,11 +46,16 @@ func runTasks(cmd *cobra.Command) error {
 	return g.Wait()
 }
 
-func loadTasks() []*compose.Task {
+func loadTasks(cmd *cobra.Command) []*compose.Task {
 	v := viper.Sub("tasks")
 	if v == nil {
 		return nil
 	}
+
+	// Get global arguments and environment variables
+	globalArgs, _ := cmd.Flags().GetStringSlice("global-args")
+	globalEnv, _ := cmd.Flags().GetStringSlice("global-env")
+	globalWorkingDir, _ := cmd.Flags().GetString("global-working-dir")
 
 	// Pre-allocate slice with known capacity
 	settings := v.AllSettings()
@@ -62,12 +67,29 @@ func loadTasks() []*compose.Task {
 		cmds := t.GetString("cmds")
 
 		if args, err := shlex.Split(cmds); err == nil && len(args) > 0 {
-			tasks = append(tasks, &compose.Task{
+			// Apply global arguments to each task
+			finalArgs := make([]string, 0, len(args)+len(globalArgs))
+			finalArgs = append(finalArgs, args...)
+			finalArgs = append(finalArgs, globalArgs...)
+			
+			task := &compose.Task{
 				Name:  name,
 				Cmd:   args[0],
-				Args:  args[1:],
+				Args:  finalArgs[1:], // Skip the command name, include original args + global args
 				Delay: t.GetDuration("delay"),
-			})
+			}
+			
+			// Set global environment variables if specified
+			if len(globalEnv) > 0 {
+				task.Env = globalEnv
+			}
+			
+			// Set global working directory if specified
+			if globalWorkingDir != "" {
+				task.WorkingDir = globalWorkingDir
+			}
+			
+			tasks = append(tasks, task)
 		}
 	}
 
